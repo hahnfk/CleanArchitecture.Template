@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CleanArchitecture.Template.Domain\CleanArchitecture.Template.Domain.csproj" />
+    <ProjectReference Include="..\CleanArchitecture.Template.Application\CleanArchitecture.Template.Application.csproj" />
+  </ItemGroup>
+</Project>

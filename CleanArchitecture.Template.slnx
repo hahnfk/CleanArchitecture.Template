@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="src/CleanArchitecture.Template.Domain/CleanArchitecture.Template.Domain.csproj" />
+  <Project Path="src/CleanArchitecture.Template.Application/CleanArchitecture.Template.Application.csproj" />
+  <Project Path="src/CleanArchitecture.Template.Infrastructure.EfCore/CleanArchitecture.Template.Infrastructure.EfCore.csproj" />
+  <Project Path="src/CleanArchitecture.Template.Infrastructure.Ado/CleanArchitecture.Template.Infrastructure.Ado.csproj" />
+  <Project Path="src/CleanArchitecture.Template.Presentation.Api/CleanArchitecture.Template.Presentation.Api.csproj" />
+  <Project Path="tests/CleanArchitecture.Template.Domain.UnitTests/CleanArchitecture.Template.Domain.UnitTests.csproj" />
+  <Project Path="tests/CleanArchitecture.Template.Infrastructure.IntegrationTests/CleanArchitecture.Template.Infrastructure.IntegrationTests.csproj" />
+</Solution>

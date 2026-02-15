@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <ItemGroup>
+    <ProjectReference Include="..\CleanArchitecture.Template.Application\CleanArchitecture.Template.Application.csproj" />
+    <ProjectReference Include="..\CleanArchitecture.Template.Infrastructure.EfCore\CleanArchitecture.Template.Infrastructure.EfCore.csproj" />
+    <ProjectReference Include="..\CleanArchitecture.Template.Infrastructure.Ado\CleanArchitecture.Template.Infrastructure.Ado.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+  </ItemGroup>
+</Project>
