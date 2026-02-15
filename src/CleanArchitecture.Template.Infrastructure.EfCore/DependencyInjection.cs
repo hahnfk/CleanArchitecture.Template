@@ -1,5 +1,6 @@
 using CleanArchitecture.Template.Application.Abstractions.Persistence;
 using CleanArchitecture.Template.Application.Abstractions.Queries;
+using CleanArchitecture.Template.Domain.Aggregates;
 using CleanArchitecture.Template.Infrastructure.EfCore.Persistence;
 using CleanArchitecture.Template.Infrastructure.EfCore.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -21,9 +22,15 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
+        // Open-generic repository registration (primary)
         services.AddScoped(typeof(IRepository<,>), typeof(EfRepository<,>));
-        services.AddScoped(typeof(IReadRepository<,>), sp => sp.GetRequiredService(typeof(IRepository<,>)));
-        services.AddScoped(typeof(IWriteRepository<>), sp => sp.GetRequiredService(typeof(IRepository<,>)));
+
+        // NOTE:
+        // IWriteRepository<TAggregate> cannot be mapped to IRepository<TAggregate, TId> as open generic because TId is unknown.
+        // For the template (Customer uses Guid) we register the bridge explicitly.
+        services.AddScoped<IRepository<Customer, Guid>, EfRepository<Customer, Guid>>();
+        services.AddScoped<IReadRepository<Customer, Guid>>(sp => sp.GetRequiredService<IRepository<Customer, Guid>>());
+        services.AddScoped<IWriteRepository<Customer>>(sp => sp.GetRequiredService<IRepository<Customer, Guid>>());
 
         services.AddScoped<ICustomerQueries, CustomerQueries>();
 
