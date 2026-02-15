@@ -1,7 +1,9 @@
 using CleanArchitecture.Template.Application;
 using CleanArchitecture.Template.Application.Abstractions.Queries;
+using CleanArchitecture.Template.Application.Customers.Dtos;
 using CleanArchitecture.Template.Application.Customers.UseCases.CreateCustomer;
 using CleanArchitecture.Template.Application.Customers.UseCases.DeleteCustomer;
+using CleanArchitecture.Template.Application.Customers.UseCases.DeleteCustomers;
 using CleanArchitecture.Template.Application.Customers.UseCases.GetCustomer;
 using CleanArchitecture.Template.Application.Customers.UseCases.UpdateCustomer;
 using CleanArchitecture.Template.Contracts.Persistence;
@@ -84,7 +86,7 @@ app.MapPost("/customers", async (CreateCustomerCommand cmd, CreateCustomerHandle
 
 app.MapGet("/customers/{id:guid}", async (Guid id, GetCustomerHandler handler, CancellationToken ct) =>
 {
-    var result = await handler.HandleAsync(new GetCustomerQuery(id), ct);
+    var result = await handler.HandleAsync(new GetCustomerHandler(id), ct);
     return result.IsSuccess ? Results.Ok(result.Value) : Results.NotFound(result.Error);
 });
 
