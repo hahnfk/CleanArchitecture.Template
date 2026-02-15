@@ -1,18 +1,25 @@
 using CleanArchitecture.Template.Application.Abstractions.Persistence;
+using CleanArchitecture.Template.Application.Customers.Specifications;
 using CleanArchitecture.Template.Application.Primitives;
 using CleanArchitecture.Template.Domain.Aggregates;
 using CleanArchitecture.Template.Domain.ValueObjects;
+using Microsoft.EntityFrameworkCore;
 
 namespace CleanArchitecture.Template.Application.Customers.UseCases.CreateCustomer;
 
 public sealed class CreateCustomerHandler
 {
-    private readonly IWriteRepository<Customer> _repo;
+    private readonly IReadRepository<Customer, Guid> _readRepo;
+    private readonly IWriteRepository<Customer> _writeRepo;
     private readonly IUnitOfWork _uow;
 
-    public CreateCustomerHandler(IWriteRepository<Customer> repo, IUnitOfWork uow)
+    public CreateCustomerHandler(
+        IReadRepository<Customer, Guid> readRepo,
+        IWriteRepository<Customer> writeRepo,
+        IUnitOfWork uow)
     {
-        _repo = repo;
+        _readRepo = readRepo;
+        _writeRepo = writeRepo;
         _uow = uow;
     }
 
@@ -20,12 +27,24 @@ public sealed class CreateCustomerHandler
     {
         try
         {
-            var customer = new Customer(Guid.NewGuid(), command.Name, Email.Create(command.Email));
+            var email = Email.Create(command.Email);
 
-            await _repo.AddAsync(customer, ct);
+            // Prevent DB-level unique constraint exceptions and return a friendly error.
+            var existing = await _readRepo.FirstOrDefaultAsync(new CustomerByEmailSpec(email.Value), ct);
+            if (existing is not null)
+                return Result<Guid>.Fail("customer.email_already_exists", "A customer with this email already exists.");
+
+            var customer = new Customer(Guid.NewGuid(), command.Name, email);
+
+            await _writeRepo.AddAsync(customer, ct);
             await _uow.SaveChangesAsync(ct);
 
             return Result<Guid>.Ok(customer.Id);
+        }
+        catch (DbUpdateException ex)
+        {
+            var details = ex.InnerException?.Message ?? ex.Message;
+            return Result<Guid>.Fail("customer.create_failed", details);
         }
         catch (Exception ex)
         {
