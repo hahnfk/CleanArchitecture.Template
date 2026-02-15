@@ -86,7 +86,7 @@ app.MapPost("/customers", async (CreateCustomerCommand cmd, CreateCustomerHandle
 
 app.MapGet("/customers/{id:guid}", async (Guid id, GetCustomerHandler handler, CancellationToken ct) =>
 {
-    var result = await handler.HandleAsync(new GetCustomerHandler(id), ct);
+    var result = await handler.HandleAsync(new GetCustomerQuery(id), ct);
     return result.IsSuccess ? Results.Ok(result.Value) : Results.NotFound(result.Error);
 });
 

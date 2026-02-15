@@ -10,9 +10,9 @@ public sealed class GetCustomerHandler
 
     public GetCustomerHandler(ICustomerQueries queries) => _queries = queries;
 
-    public async Task<Result<CustomerDetailsDto>> HandleAsync(Guid id, CancellationToken ct = default)
+    public async Task<Result<CustomerDetailsDto>> HandleAsync(GetCustomerQuery query, CancellationToken ct = default)
     {
-        var dto = await _queries.GetDetailsAsync(id, ct);
+        var dto = await _queries.GetDetailsAsync(query.Id, ct);
         return dto is null
             ? Result<CustomerDetailsDto>.Fail("customer.not_found", "Customer not found.")
             : Result<CustomerDetailsDto>.Ok(dto);
