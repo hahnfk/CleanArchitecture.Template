@@ -62,7 +62,9 @@ switch (persistence.Provider)
 
             // If no EF migrations exist yet, fall back to EnsureCreated (dev-friendly).
             // If migrations exist, use Migrate to keep schema in sync.
-            var hasMigrations = (await db.Database.GetAppliedMigrationsAsync()).Any();
+            var appliedMigrations = await db.Database.GetAppliedMigrationsAsync();
+            var pendingMigrations = await db.Database.GetPendingMigrationsAsync();
+            var hasMigrations = appliedMigrations.Any() || pendingMigrations.Any();
             if (!hasMigrations)
                 await db.Database.EnsureCreatedAsync();
             else
