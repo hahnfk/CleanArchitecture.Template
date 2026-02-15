@@ -2,6 +2,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CleanArchitecture.Template.Domain\CleanArchitecture.Template.Domain.csproj" />
     <ProjectReference Include="..\CleanArchitecture.Template.Application\CleanArchitecture.Template.Application.csproj" />
+    <ProjectReference Include="..\CleanArchitecture.Template.Contracts\CleanArchitecture.Template.Contracts.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,10 +1,11 @@
 using CleanArchitecture.Template.Application.Abstractions.Persistence;
 using CleanArchitecture.Template.Application.Abstractions.Queries;
 using CleanArchitecture.Template.Domain.Aggregates;
-using CleanArchitecture.Template.Infrastructure.Ado.Persistence;
-using CleanArchitecture.Template.Infrastructure.Ado.Queries;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using CleanArchitecture.Template.Infrastructure.EfCore.Persistence;
+using CleanArchitecture.Template.Infrastructure.EfCore.Queries;
 
 namespace CleanArchitecture.Template.Infrastructure.Ado;
 
@@ -14,13 +15,19 @@ public static class DependencyInjection
     {
         var connectionString = config.GetConnectionString("AppDb") ?? "Data Source=app.db";
 
-        services.AddScoped(_ => new AdoUnitOfWork(connectionString));
-        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AdoUnitOfWork>());
+        services.AddDbContext<AppDbContext>(opt =>
+        {
+            opt.UseSqlite(connectionString);
+        });
 
-        services.AddScoped<IReadRepository<Customer, Guid>, AdoCustomerRepository>();
-        services.AddScoped<IWriteRepository<Customer>, AdoCustomerRepository>();
+        services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
-        services.AddScoped<ICustomerQueries>(_ => new AdoCustomerQueries(connectionString));
+        services.AddScoped(typeof(IRepository<,>), typeof(EfRepository<,>));
+        services.AddScoped(typeof(IReadRepository<,>), typeof(EfRepository<,>));
+        // IWriteRepository<> has fewer type params than EfRepository<,>, so register closed types:
+        services.AddScoped<IWriteRepository<Customer>>(sp => sp.GetRequiredService<IRepository<Customer, Guid>>());
+
+        services.AddScoped<ICustomerQueries, CustomerQueries>();
 
         return services;
     }

@@ -35,7 +35,7 @@ LIMIT 1;";
             reader.GetInt32(3) == 1);
     }
 
-    public async Task<PagedResult<CustomerListItemDto>> SearchAsync(CustomerSearchQuery query, CancellationToken ct = default)
+    public async Task<CleanArchitecture.Template.Application.Abstractions.Queries.PagedResult<CustomerListItemDto>> SearchAsync(CustomerSearchQuery query, CancellationToken ct = default)
     {
         var term = query.Term?.Trim();
         var page = Math.Max(1, query.Page);
@@ -79,6 +79,6 @@ LIMIT $take OFFSET $skip;";
                 reader.GetString(2)));
         }
 
-        return new PagedResult<CustomerListItemDto>(items, total, page, pageSize);
+        return new CleanArchitecture.Template.Application.Abstractions.Queries.PagedResult<CustomerListItemDto>(items, total, page, pageSize);
     }
 }

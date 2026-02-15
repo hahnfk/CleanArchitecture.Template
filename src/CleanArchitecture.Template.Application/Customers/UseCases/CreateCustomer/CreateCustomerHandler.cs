@@ -21,8 +21,10 @@ public sealed class CreateCustomerHandler
         try
         {
             var customer = new Customer(Guid.NewGuid(), command.Name, Email.Create(command.Email));
+
             await _repo.AddAsync(customer, ct);
             await _uow.SaveChangesAsync(ct);
+
             return Result<Guid>.Ok(customer.Id);
         }
         catch (Exception ex)

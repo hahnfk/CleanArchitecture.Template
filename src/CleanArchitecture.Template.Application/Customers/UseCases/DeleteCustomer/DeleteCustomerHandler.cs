@@ -20,14 +20,15 @@ public sealed class DeleteCustomerHandler
         _uow = uow;
     }
 
-    public async Task<Result<bool>> HandleAsync(Guid id, CancellationToken ct = default)
+    public async Task<Result<Unit>> HandleAsync(Guid id, CancellationToken ct = default)
     {
         var customer = await _readRepo.GetByIdAsync(id, ct);
         if (customer is null)
-            return Result<bool>.Fail("customer.not_found", "Customer not found.");
+            return Result<Unit>.Fail("customer.not_found", "Customer not found.");
 
         await _writeRepo.RemoveAsync(customer, ct);
         await _uow.SaveChangesAsync(ct);
-        return Result<bool>.Ok(true);
+
+        return Result<Unit>.Ok(new Unit());
     }
 }

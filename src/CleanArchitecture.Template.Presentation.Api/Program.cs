@@ -1,51 +1,65 @@
+using CleanArchitecture.Template.Application;
 using CleanArchitecture.Template.Application.Abstractions.Queries;
-using CleanArchitecture.Template.Application.Customers.Dtos;
 using CleanArchitecture.Template.Application.Customers.UseCases.CreateCustomer;
 using CleanArchitecture.Template.Application.Customers.UseCases.DeleteCustomer;
+using CleanArchitecture.Template.Application.Customers.UseCases.GetCustomer;
+using CleanArchitecture.Template.Application.Customers.UseCases.UpdateCustomer;
+using CleanArchitecture.Template.Contracts.Persistence;
 using CleanArchitecture.Template.Infrastructure.Ado;
 using CleanArchitecture.Template.Infrastructure.EfCore;
 using CleanArchitecture.Template.Infrastructure.EfCore.Persistence;
+using CleanArchitecture.Template.Infrastructure.InMemory;
+using CleanArchitecture.Template.Presentation.Api;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var provider = builder.Configuration.GetValue<string>("DataAccess:Provider") ?? "Ef";
+builder.Services.AddApplication();
+builder.Services.AddPresentation();
 
-if (string.Equals(provider, "Ado", StringComparison.OrdinalIgnoreCase))
+var persistence = builder.Configuration.GetPersistenceOptions();
+
+switch (persistence.Provider)
 {
-    builder.Services.AddAdoInfrastructure(builder.Configuration);
+    case PersistenceProvider.Ado:
+        builder.Services.AddAdoInfrastructure(builder.Configuration);
+        break;
+
+    case PersistenceProvider.InMemory:
+        builder.Services.AddInMemoryInfrastructure(builder.Configuration);
+        break;
+
+    case PersistenceProvider.Ef:
+    default:
+        builder.Services.AddEfCoreInfrastructure(builder.Configuration);
+        break;
 }
-else
-{
-    builder.Services.AddEfCoreInfrastructure(builder.Configuration);
-}
-
-builder.Services.AddScoped<CreateCustomerHandler>();
-builder.Services.AddScoped<DeleteCustomerHandler>();
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "CleanArchitecture.Template API",
-        Version = "v1"
-    });
-});
 
 var app = builder.Build();
 
-if (string.Equals(provider, "Ado", StringComparison.OrdinalIgnoreCase))
+// bootstrap persistence
+switch (persistence.Provider)
 {
-    var cs = app.Configuration.GetConnectionString("AppDb") ?? "Data Source=app.db";
-    await DatabaseBootstrapper.EnsureSchemaAsync(cs);
-}
-else
-{
-    using var scope = app.Services.CreateScope();
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+    case PersistenceProvider.Ado:
+        {
+            var cs = persistence.ConnectionString
+                     ?? app.Configuration.GetConnectionString("AppDb")
+                     ?? "Data Source=app.db";
+            await DatabaseBootstrapper.EnsureSchemaAsync(cs);
+            break;
+        }
+
+    case PersistenceProvider.InMemory:
+        break;
+
+    case PersistenceProvider.Ef:
+    default:
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.MigrateAsync();
+            break;
+        }
 }
 
 if (app.Environment.IsDevelopment())
@@ -58,7 +72,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.MapGet("/", () => Results.Ok(new { Status = "OK", Provider = provider }));
+app.MapGet("/", () => Results.Ok(new { Status = "OK", Provider = persistence.Provider.ToString() }));
 
 app.MapPost("/customers", async (CreateCustomerCommand cmd, CreateCustomerHandler handler, CancellationToken ct) =>
 {
@@ -68,10 +82,10 @@ app.MapPost("/customers", async (CreateCustomerCommand cmd, CreateCustomerHandle
         : Results.BadRequest(result.Error);
 });
 
-app.MapGet("/customers/{id:guid}", async (Guid id, ICustomerQueries queries, CancellationToken ct) =>
+app.MapGet("/customers/{id:guid}", async (Guid id, GetCustomerHandler handler, CancellationToken ct) =>
 {
-    var dto = await queries.GetDetailsAsync(id, ct);
-    return dto is null ? Results.NotFound() : Results.Ok(dto);
+    var result = await handler.HandleAsync(new GetCustomerQuery(id), ct);
+    return result.IsSuccess ? Results.Ok(result.Value) : Results.NotFound(result.Error);
 });
 
 app.MapGet("/customers", async (string? term, int page, int pageSize, ICustomerQueries queries, CancellationToken ct) =>
@@ -80,10 +94,23 @@ app.MapGet("/customers", async (string? term, int page, int pageSize, ICustomerQ
     return Results.Ok(result);
 });
 
+app.MapPut("/customers/{id:guid}", async (Guid id, UpdateCustomerCommand body, UpdateCustomerHandler handler, CancellationToken ct) =>
+{
+    var cmd = body with { Id = id };
+    var result = await handler.HandleAsync(cmd, ct);
+    return result.IsSuccess ? Results.NoContent() : Results.NotFound(result.Error);
+});
+
 app.MapDelete("/customers/{id:guid}", async (Guid id, DeleteCustomerHandler handler, CancellationToken ct) =>
 {
     var result = await handler.HandleAsync(id, ct);
     return result.IsSuccess ? Results.NoContent() : Results.NotFound(result.Error);
+});
+
+app.MapDelete("/customers", async (Guid[] ids, DeleteCustomersHandler handler, CancellationToken ct) =>
+{
+    var result = await handler.HandleAsync(new DeleteCustomersCommand(ids), ct);
+    return result.IsSuccess ? Results.Ok(new { Deleted = result.Value }) : Results.BadRequest(result.Error);
 });
 
 app.Run();

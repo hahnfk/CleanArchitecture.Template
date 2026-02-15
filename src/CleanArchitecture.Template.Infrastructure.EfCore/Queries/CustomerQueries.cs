@@ -17,7 +17,7 @@ public sealed class CustomerQueries : ICustomerQueries
             .Select(x => new CustomerDetailsDto(x.Id, x.Name, x.Email.Value, x.IsActive))
             .SingleOrDefaultAsync(ct);
 
-    public async Task<PagedResult<CustomerListItemDto>> SearchAsync(CustomerSearchQuery query, CancellationToken ct = default)
+    public async Task<CleanArchitecture.Template.Application.Abstractions.Queries.PagedResult<CustomerListItemDto>> SearchAsync(CustomerSearchQuery query, CancellationToken ct = default)
     {
         var term = query.Term?.Trim();
         var page = Math.Max(1, query.Page);
@@ -41,6 +41,6 @@ public sealed class CustomerQueries : ICustomerQueries
             .Select(x => new CustomerListItemDto(x.Id, x.Name, x.Email.Value))
             .ToListAsync(ct);
 
-        return new PagedResult<CustomerListItemDto>(items, total, page, pageSize);
+        return new CleanArchitecture.Template.Application.Abstractions.Queries.PagedResult<CustomerListItemDto>(items, total, page, pageSize);
     }
 }

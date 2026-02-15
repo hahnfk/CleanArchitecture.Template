@@ -1,12 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
     <ProjectReference Include="..\CleanArchitecture.Template.Domain\CleanArchitecture.Template.Domain.csproj" />
     <ProjectReference Include="..\CleanArchitecture.Template.Application\CleanArchitecture.Template.Application.csproj" />
     <ProjectReference Include="..\CleanArchitecture.Template.Contracts\CleanArchitecture.Template.Contracts.csproj" />
-    <ProjectReference Include="..\CleanArchitecture.Template.Infrastructure.EfCore\CleanArchitecture.Template.Infrastructure.EfCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" />
   </ItemGroup>
 </Project>

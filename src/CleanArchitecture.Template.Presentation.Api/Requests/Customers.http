@@ -1,0 +1,47 @@
+@baseUrl = http://localhost:5000
+@id = 00000000-0000-0000-0000-000000000000
+
+### Health
+GET {{baseUrl}}/
+Accept: application/json
+
+### Create customer
+# @name createCustomer
+POST {{baseUrl}}/customers
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Ada Lovelace",
+  "email": "ada@example.com"
+}
+
+### Read customer by id (use id from create response)
+@createdId = {{createCustomer.response.body.$.id}}
+GET {{baseUrl}}/customers/{{createdId}}
+Accept: application/json
+
+### Search customers (paged)
+GET {{baseUrl}}/customers?term=ada&page=1&pageSize=10
+Accept: application/json
+
+### Update customer
+PUT {{baseUrl}}/customers/{{createdId}}
+Content-Type: application/json
+
+{
+  "id": "{{createdId}}",
+  "name": "Ada Lovelace (Updated)",
+  "email": "ada.updated@example.com"
+}
+
+### Delete customer
+DELETE {{baseUrl}}/customers/{{createdId}}
+
+### Batch delete customers
+DELETE {{baseUrl}}/customers
+Content-Type: application/json
+
+[
+  "{{createdId}}"
+]
