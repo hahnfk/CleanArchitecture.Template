@@ -39,7 +39,7 @@ switch (persistence.Provider)
 
 var app = builder.Build();
 
-// bootstrap persistence
+// bootstrap persistence (template convenience)
 switch (persistence.Provider)
 {
     case PersistenceProvider.Ado:
@@ -59,7 +59,15 @@ switch (persistence.Provider)
         {
             using var scope = app.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await db.Database.MigrateAsync();
+
+            // If no EF migrations exist yet, fall back to EnsureCreated (dev-friendly).
+            // If migrations exist, use Migrate to keep schema in sync.
+            var hasMigrations = (await db.Database.GetAppliedMigrationsAsync()).Any();
+            if (!hasMigrations)
+                await db.Database.EnsureCreatedAsync();
+            else
+                await db.Database.MigrateAsync();
+
             break;
         }
 }
