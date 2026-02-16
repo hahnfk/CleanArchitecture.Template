@@ -12,6 +12,7 @@ using CleanArchitecture.Template.Infrastructure.EfCore;
 using CleanArchitecture.Template.Infrastructure.EfCore.Persistence;
 using CleanArchitecture.Template.Infrastructure.InMemory;
 using CleanArchitecture.Template.Presentation.Api;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -119,7 +120,7 @@ app.MapDelete("/customers/{id:guid}", async (Guid id, DeleteCustomerHandler hand
     return result.IsSuccess ? Results.NoContent() : Results.NotFound(result.Error);
 });
 
-app.MapDelete("/customers", async (Guid[] ids, DeleteCustomersHandler handler, CancellationToken ct) =>
+app.MapDelete("/customers", async ([FromBody] Guid [] ids, DeleteCustomersHandler handler, CancellationToken ct) =>
 {
     var result = await handler.HandleAsync(new DeleteCustomersCommand(ids), ct);
     return result.IsSuccess ? Results.Ok(new { Deleted = result.Value }) : Results.BadRequest(result.Error);

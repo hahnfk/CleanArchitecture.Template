@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:5000
+@baseUrl = http://localhost:53282
 @id = 00000000-0000-0000-0000-000000000000
 
 ### Health
@@ -25,6 +25,11 @@ Accept: application/json
 GET {{baseUrl}}/customers?term=ada&page=1&pageSize=10
 Accept: application/json
 
+> {% 
+const ids = response.body.items.map(x => x.id);
+client.global.set("idsJson", JSON.stringify(ids, null, 2));
+%}
+
 ### Update customer
 PUT {{baseUrl}}/customers/{{createdId}}
 Content-Type: application/json
@@ -42,6 +47,4 @@ DELETE {{baseUrl}}/customers/{{createdId}}
 DELETE {{baseUrl}}/customers
 Content-Type: application/json
 
-[
-  "{{createdId}}"
-]
+{{idsJson}}
