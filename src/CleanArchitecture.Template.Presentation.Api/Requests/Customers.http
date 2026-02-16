@@ -43,5 +43,6 @@ DELETE {{baseUrl}}/customers
 Content-Type: application/json
 
 [
-  "a35908a8-31dd-495c-8b1e-e804fee497e2"
+  "a35908a8-31dd-495c-8b1e-e804fee497e2",
+  "4e9dec24-87df-4a2f-8980-beb8dd8559fc"
 ]

@@ -4,5 +4,8 @@ namespace CleanArchitecture.Template.Infrastructure.InMemory;
 
 public sealed class InMemoryUnitOfWork : IUnitOfWork
 {
-    public Task<int> SaveChangesAsync(CancellationToken ct = default) => (Task<int>)Task.CompletedTask;
+    public Task<int> SaveChangesAsync(CancellationToken ct = default)
+    {
+        return Task.FromResult(0);
+    }
 }
