@@ -25,11 +25,6 @@ Accept: application/json
 GET {{baseUrl}}/customers?term=ada&page=1&pageSize=10
 Accept: application/json
 
-> {% 
-const ids = response.body.items.map(x => x.id);
-client.global.set("idsJson", JSON.stringify(ids, null, 2));
-%}
-
 ### Update customer
 PUT {{baseUrl}}/customers/{{createdId}}
 Content-Type: application/json
@@ -47,4 +42,6 @@ DELETE {{baseUrl}}/customers/{{createdId}}
 DELETE {{baseUrl}}/customers
 Content-Type: application/json
 
-{{idsJson}}
+[
+  "a35908a8-31dd-495c-8b1e-e804fee497e2"
+]
